@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: klaviyo
+    database: "{% if target.type != 'spark'%}{{ var('klaviyo_database', target.database) }}{% endif %}"
+    schema: "{{ var ('klaviyo_schema', 'tap_klaviyo') }}"
+    tables:
+      - name: campaigns
+      - name: events     
+      - name: lists
+      - name: metrics
+      - name: profiles
