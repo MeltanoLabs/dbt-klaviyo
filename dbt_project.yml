@@ -22,7 +22,7 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 vars:
-  klaviyo_database: "postgres"
+  klaviyo_database: "meltano_sandbox_dev"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
