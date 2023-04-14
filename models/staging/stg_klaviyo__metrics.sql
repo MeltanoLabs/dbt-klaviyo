@@ -15,7 +15,7 @@ with source as (
         , attributes::json->'integration'->'id' as integration_id
         , attributes::json->'integration'->'name' as integration_name
         , attributes::json->'integration'->'category' as integration_category
-        , updated as updated_at
+        , updated as updated
 
 {% elif target.type == 'snowflake'%}
 
@@ -26,7 +26,7 @@ with source as (
         , attributes:integration:id::string as integration_id
         , attributes:integration:name::string as integration_name
         , attributes:integration:category::string as integration_category
-        , updated::timestamptz as updated_at
+        , updated::timestamptz as updated
 
 {% else %}
 
@@ -35,7 +35,7 @@ with source as (
 {% endif %}
 
     from source
-    
+
 )
 
 select * from final
