@@ -1,6 +1,6 @@
 with source as (
 
-    select * from {{ source('klaviyo', 'events') }}
+    select * from {{ source('snowflake_klaviyo', 'events') }}
 
 )
 
