@@ -7,7 +7,7 @@ with source as (
 , final as (
 
     select
-        id as profile_id
+        id as person_id
         , list_id as list_id
     from source
 

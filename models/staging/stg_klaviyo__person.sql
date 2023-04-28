@@ -7,7 +7,7 @@ with source as (
 , final as (
 
     select
-        id as profile_id
+        id
         , type as profile_type
         , attributes:email::string as email
         , attributes:image::string as image
