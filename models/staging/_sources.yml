@@ -11,3 +11,4 @@ sources:
       - name: listperson
       - name: metrics
       - name: profiles
+      - name: templates
