@@ -7,14 +7,13 @@ with source as (
 , final as (
 
     select
-        id as metric_id
-        , attributes::json->'name' as metric_name
-        , attributes::json->'created' as created_at
-        , attributes::json->'integration'->'id' as integration_id
-        , attributes::json->'integration'->'name' as integration_name
-        , attributes::json->'integration'->'category' as integration_category
-        , updated as updated_at -- TODO Fix this in the tap
-
+        id
+        , attributes:name::string as name
+        , attributes:integration:id::string as integration_id
+        , attributes:integration:name::string as integration_name
+        , attributes:integration:category::string as integration_category
+        , attributes:created::timestamptz as created
+        , updated::timestamptz as updated
     from source
 
 )

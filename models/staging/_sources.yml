@@ -8,5 +8,7 @@ sources:
       - name: campaigns
       - name: events     
       - name: lists
+      - name: listperson
       - name: metrics
       - name: profiles
+      - name: templates

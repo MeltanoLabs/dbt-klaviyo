@@ -1,6 +1,6 @@
 with source as (
 
-    select * from {{ source('klaviyo', 'lists') }}
+    select * from {{ source('klaviyo', 'templates') }}
 
 )
 
@@ -8,7 +8,8 @@ with source as (
 
     select
         id::string as id
-        , attributes:name::string as list_name
+        , attributes:name::string as name
+        , attributes:html::string as html
         , attributes:created::timestamptz as created
         , updated::timestamptz as updated
     from source
