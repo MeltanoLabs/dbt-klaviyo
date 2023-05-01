@@ -7,15 +7,15 @@ with source as (
 , final as (
 
     select
-        id as event_id
-        , attributes::json->'uuid' as uuid
-        , attributes::json->'datetime' as datetime
-        , attributes::json->'metric_id' as metric_id
-        , attributes::json->'timestamp' as timestamp
-        , attributes::json->'profile_id' as profile_id
-        , null as event_properties -- TODO parse this structure
-        , datetime::timestamp as updated_at -- TODO Fix this in the tap
-
+        id
+        , attributes:uuid::string as uuid
+        , attributes:metric_id::string as metric_id
+        , attributes:profile_id::string as profile_id
+        , type
+        , datetime::timestamptz as updated_at
+        , attributes:timestamp::timestamptz as timestamp
+        , attributes:event_properties as event_properties_metadata
+        , attributes as attributes_metadata
     from source
 
 )

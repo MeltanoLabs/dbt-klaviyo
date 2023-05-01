@@ -14,6 +14,7 @@ with source as (
         , attributes:integration:category::string as integration_category
         , attributes:created::timestamptz as created
         , updated::timestamptz as updated
+        , attributes as attributes_metadata
     from source
 
 )

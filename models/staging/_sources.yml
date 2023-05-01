@@ -6,7 +6,7 @@ sources:
     schema: "{{ var ('klaviyo_schema', 'tap_klaviyo') }}"
     tables:
       - name: campaigns
-      - name: events     
+      - name: events
       - name: lists
       - name: listperson
       - name: metrics
