@@ -15,15 +15,15 @@ with source as (
         id as campaign_id
         , updated_at::timestamp
 
-        , {{ extract_json_field('attributes', 'created_at') }} as created_at
-        , {{ extract_json_field('attributes', 'scheduled_at') }} as scheduled_at
-        , {{ extract_json_field('attributes', 'name') }} as campaign_name
-        , {{ extract_json_field('attributes', 'type') }} as type
-        , {{ extract_json_field('attributes', 'status') }} as status
-        , {{ extract_json_field('attributes', 'channel') }} as channel
-        , {{ extract_json_field('attributes', 'message') }} as message
-        , {{ extract_json_field('attributes', 'archived') }} as is_archived
-        , {{ extract_json_field('attributes', 'send_time') }} as send_time
+        , json_extract_path_text(attributes::variant, 'created_at') as created_at
+        , json_extract_path_text(attributes::variant, 'scheduled_at') as scheduled_at
+        , json_extract_path_text(attributes::variant, 'name') as campaign_name
+        , json_extract_path_text(attributes::variant, 'type') as type
+        , json_extract_path_text(attributes::variant, 'status') as status
+        , json_extract_path_text(attributes::variant, 'channel') as channel
+        , json_extract_path_text(attributes::variant, 'message') as message
+        , json_extract_path_text(attributes::variant, 'archived') as is_archived
+        , json_extract_path_text(attributes::variant, 'send_time') as send_time
 
         , attributes as attributes_metadata
 

@@ -11,20 +11,17 @@ with source as (
 
         , type
 
-        , datetime::timestamp as updated_at -- TODO Fix this in the tap
+        , datetime::timestamp as updated_at
 
-        , {{ extract_json_field('attributes', 'uuid') }} as uuid
-        , {{ extract_json_field('attributes', 'metric_id') }} as metric_id
-        , {{ extract_json_field('attributes', 'profile_id') }} as profile_id
+        , json_extract_path_text(attributes::variant, 'datetime') as datetime
+        , json_extract_path_text(attributes::variant, 'timestamp') as timestamp
 
-        , {{ extract_json_field('attributes', 'datetime') }} as datetime
-        , {{ extract_json_field('attributes', 'timestamp') }} as timestamp
+        , json_extract_path_text(attributes::variant, 'uuid') as uuid
+        , json_extract_path_text(attributes::variant, 'metric_id') as metric_id
+        , json_extract_path_text(attributes::variant, 'profile_id') as profile_id
 
-
-        , {{ extract_json_field('attributes', 'event_properties') }} as event_properties
-        , {{ extract_json('attributes:event_properties') }} as event_properties_metadata
+        , attributes::variant:event_properties as event_properties_metadata
         , attributes as attributes_metadata
-
     from source
 
 )

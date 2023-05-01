@@ -1,26 +1,103 @@
 with
-    source as (
+    events as (
 
         select * from {{ ref('stg_klaviyo__events') }}
     )
 
-    , event_items as (
-
+    , event_properties as (
         select
             events.event_id
-            , flattened_item_properties.*
+            , events.event_properties_metadata:OrderId
+            , events.event_properties_metadata:ProductID as product_id
+            , flattened_properties.*
         from events
-        , {{ flatten_json ('events', 'event_properties_metadata:Items') }} as flattened_items
-        , {{ flatten_json ('flattened_event_properties', 'value') }} as flattened_item_properties
+        , lateral flatten(input => events.event_properties_metadata) flattened_properties
     )
 
-    , pivoted_event_properties as (
+    , event_items as (
+        select
+            events.event_id
+            , events.event_properties_metadata:OrderId as order_id
+            , flattened_item_metadata.value:ProductID as product_id
+            , flattened_items.*
+        from events
+        , lateral flatten(input => events.event_properties_metadata:Items) flattened_item_metadata
+        , lateral flatten(input => flattened_item_metadata.value) flattened_items
+    )
+
+    , single_item_events as (
+        select
+            event_properties.event_id
+            , event_properties.product_id
+            , 1 as quantity
+            , max(case when event_properties.key = 'ImageURL' then event_properties.value end) as image_url
+            , max(case when event_properties.key = 'Price' then event_properties.value end) as item_price
+            , max(case when event_properties.key = 'ProductCategories' then event_properties.value end) as product_categories
+            , max(case when event_properties.key = 'ProductName' then event_properties.value end) as product_name
+            , max(case when event_properties.key = 'ProductURL' then event_properties.value end) as product_url
+            , max(case when event_properties.key = 'SKU' then event_properties.value end) as sku
+            , max(case when event_properties.key = 'Brand' then event_properties.value end) as brand
+            , max(case when event_properties.key = 'Categories' then event_properties.value end) as categories
+        from event_properties
+        left join event_items
+            on event_properties.event_id = event_items.event_id
+        where
+            event_items.event_id is null /* Exclude events with multiple items */
+            and event_properties.product_id is not null /* Exclude events with no items */
+        group by 1, 2, 2
+    )
+
+    , multiple_item_events as (
+        select
+            event_id
+            , product_id
+            , max(case when key = 'Quantity' then value end) as quantity
+            , max(case when key = 'ImageURL' then value end) as image_url
+            , max(case when key = 'ItemPrice' then value end) as item_price
+            , max(case when key = 'ProductCategories' then value end) as product_categories
+            , max(case when key = 'ProductName' then value end) as product_name
+            , max(case when key = 'ProductURL' then value end) as product_url
+            , max(case when key = 'SKU' then value end) as sku
+            , max(case when key = 'Brand' then value end) as brand
+            , max(case when key = 'Categories' then value end) as categories
+        from event_items
+        group by 1, 2
+    )
+
+    , unioned_event_items as (
+        select * from single_item_events
+        union all
+        select * from multiple_item_events
+    )
+
+select
+    *
+from unioned_event_items
+
+
+    {# , pivoted_event_properties as (
 
         select
             events.event_id
             , flattened_item_properties
+
+
+        , max(case when key = 'ProductID' then value end) as ProductID
+
+        , max(case when key = 'ImageURL' then value end) as image_url
+        , max(case when key = 'ItemPrice' then value end) as item_price
+        , max(case when key = 'ProductCategories' then value end) as product_categories
+        , max(case when key = 'ProductName' then value end) as product_name
+        , max(case when key = 'ProductURL' then value end) as product_url
+        , max(case when key = 'Quantity' then value end) as quantity
+        , max(case when key = 'RowTotal' then value end) as row_total
+        , max(case when key = 'SKU' then value end) as sku
+        , max(case when key = 'Brand' then value end) as brand
+        , max(case when key = 'Categories' then value end) as categories
+
         from events
-        left join
+        left join event_items
+            on events
     )
 
     , final as (
@@ -30,22 +107,22 @@ with
 
             , type
 
-            , updated_at -- TODO Fix this in the tap
+            , updated_at
 
-            , {{ extract_json_field('event_properties_metadata', 'OrderId') }} as order_id
-            , {{ extract_json_field('event_properties_metadata:Items', 'ProductID') }} as product_id
-            , {{ extract_json_field('event_properties_metadata:Items', 'ProductName') }} as product_name
-            , {{ extract_json_field('event_properties_metadata:Items', 'ProductURL') }} as product_url
-            , {{ extract_json_field('event_properties_metadata:Items', 'SKU') }} as sku
-            , {{ extract_json_field('event_properties_metadata:Items', 'Brand') }} as brand
-            , {{ extract_json_field('event_properties_metadata:Items', 'Categories') }} as categories
-            , {{ extract_json_field('event_properties_metadata:Items', 'ImageURL') }} as imageurl
-            , {{ extract_json_field('event_properties_metadata:Items', 'ItemPrice') }} as item_price
-            , {{ extract_json_field('event_properties_metadata:Items', 'Quantity') }} as quantity
-            , {{ extract_json_field('event_properties_metadata:Items', 'RowTotal') }} as row_total
+            , json_extract_path_text(event_properties_metadata::variant, 'OrderId') as order_id
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'ProductID') as product_id
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'ProductName') as product_name
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'ProductURL') as product_url
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'SKU') as sku
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'Brand') as brand
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'Categories') as categories
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'ImageURL') as imageurl
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'ItemPrice') as item_price
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'Quantity') as quantity
+            , json_extract_path_text(event_properties_metadata::variant:Items, 'RowTotal') as row_total
 
         from source
 
     )
 
-select * from final
+select * from final #}
