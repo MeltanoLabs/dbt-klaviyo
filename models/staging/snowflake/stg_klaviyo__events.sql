@@ -1,26 +1,20 @@
 with source as (
 
-    select * from {{ source('snowflake_klaviyo', 'events') }}
+    select * from {{ source('klaviyo', 'events') }}
 
 )
 
 , final as (
 
     select
-        id as event_id
-
+        id
+        , attributes:uuid::string as uuid
+        , attributes:metric_id::string as metric_id
+        , attributes:profile_id::string as profile_id
         , type
-
-        , datetime::timestamp as updated_at
-
-        , json_extract_path_text(attributes::variant, 'datetime') as datetime
-        , json_extract_path_text(attributes::variant, 'timestamp') as timestamp
-
-        , json_extract_path_text(attributes::variant, 'uuid') as uuid
-        , json_extract_path_text(attributes::variant, 'metric_id') as metric_id
-        , json_extract_path_text(attributes::variant, 'profile_id') as profile_id
-
-        , attributes::variant:event_properties as event_properties_metadata
+        , datetime::timestamptz as updated_at
+        , attributes:timestamp::timestamptz as timestamp
+        , attributes:event_properties as event_properties_metadata
         , attributes as attributes_metadata
     from source
 

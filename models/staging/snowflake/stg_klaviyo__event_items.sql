@@ -6,7 +6,7 @@ with
 
     , event_properties as (
         select
-            events.event_id
+            events.id as event_id
             , events.event_properties_metadata:OrderId
             , events.event_properties_metadata:ProductID as product_id
             , flattened_properties.*
@@ -16,7 +16,7 @@ with
 
     , event_items as (
         select
-            events.event_id
+            events.id as event_id
             , events.event_properties_metadata:OrderId as order_id
             , flattened_item_metadata.value:ProductID as product_id
             , flattened_items.*
@@ -71,58 +71,15 @@ with
     )
 
 select
-    *
+    event_id
+    , product_id
+    , quantity::number as quantity
+    , image_url::string as image_url
+    , item_price::decimal(38,2) as item_price
+    , product_categories::string as product_categories
+    , product_name::string as product_name
+    , product_url::string as product_url
+    , sku::string as sku
+    , brand::string as brand
+    , categories
 from unioned_event_items
-
-
-    {# , pivoted_event_properties as (
-
-        select
-            events.event_id
-            , flattened_item_properties
-
-
-        , max(case when key = 'ProductID' then value end) as ProductID
-
-        , max(case when key = 'ImageURL' then value end) as image_url
-        , max(case when key = 'ItemPrice' then value end) as item_price
-        , max(case when key = 'ProductCategories' then value end) as product_categories
-        , max(case when key = 'ProductName' then value end) as product_name
-        , max(case when key = 'ProductURL' then value end) as product_url
-        , max(case when key = 'Quantity' then value end) as quantity
-        , max(case when key = 'RowTotal' then value end) as row_total
-        , max(case when key = 'SKU' then value end) as sku
-        , max(case when key = 'Brand' then value end) as brand
-        , max(case when key = 'Categories' then value end) as categories
-
-        from events
-        left join event_items
-            on events
-    )
-
-    , final as (
-
-        select
-            event_id
-
-            , type
-
-            , updated_at
-
-            , json_extract_path_text(event_properties_metadata::variant, 'OrderId') as order_id
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'ProductID') as product_id
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'ProductName') as product_name
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'ProductURL') as product_url
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'SKU') as sku
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'Brand') as brand
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'Categories') as categories
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'ImageURL') as imageurl
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'ItemPrice') as item_price
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'Quantity') as quantity
-            , json_extract_path_text(event_properties_metadata::variant:Items, 'RowTotal') as row_total
-
-        from source
-
-    )
-
-select * from final #}

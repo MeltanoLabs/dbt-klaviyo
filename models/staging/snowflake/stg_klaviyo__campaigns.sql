@@ -6,25 +6,23 @@
 
 with source as (
 
-    select * from {{ source('snowflake_klaviyo', 'campaigns') }}
+    select * from {{ source('klaviyo', 'campaigns') }}
 
 )
 
 , final as (
     select
-        id as campaign_id
-        , updated_at::timestamp
-
-        , json_extract_path_text(attributes::variant, 'created_at') as created_at
-        , json_extract_path_text(attributes::variant, 'scheduled_at') as scheduled_at
-        , json_extract_path_text(attributes::variant, 'name') as campaign_name
-        , json_extract_path_text(attributes::variant, 'type') as type
-        , json_extract_path_text(attributes::variant, 'status') as status
-        , json_extract_path_text(attributes::variant, 'channel') as channel
-        , json_extract_path_text(attributes::variant, 'message') as message
-        , json_extract_path_text(attributes::variant, 'archived') as is_archived
-        , json_extract_path_text(attributes::variant, 'send_time') as send_time
-
+        id
+        , updated_at::timestamptz as updated_at
+        , attributes:created_at::timestamptz as created_at
+        , attributes:scheduled_at::timestamptz as scheduled_at
+        , attributes:send_time::timestamptz as send_time
+        , attributes:name::string as campaign_name
+        , attributes:type::string as type
+        , attributes:status::string as status
+        , attributes:channel::string as channel
+        , attributes:message::string as message
+        , attributes:archived::boolean as is_archived
         , attributes as attributes_metadata
 
     from source

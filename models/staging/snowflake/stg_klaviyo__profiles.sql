@@ -1,6 +1,13 @@
+{{
+    config(
+        enabled = target.type == 'postgres'
+    )
+}}
+
+
 with source as (
 
-    select * from {{ source('snowflake_klaviyo', 'profiles') }}
+    select * from {{ source('klaviyo', 'profiles') }}
 
 )
 

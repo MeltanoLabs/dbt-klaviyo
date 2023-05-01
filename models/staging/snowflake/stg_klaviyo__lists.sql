@@ -1,17 +1,16 @@
 with source as (
 
-    select * from {{ source('snowflake_klaviyo', 'lists') }}
+    select * from {{ source('klaviyo', 'lists') }}
 
 )
 
 , final as (
 
     select
-        id as event_id
-        , attributes::json->'name' as list_name
-        , attributes::json->'created' as created_at
-        , updated as updated_at -- TODO Fix this in the tap
-
+        id::string as id
+        , attributes:name::string as list_name
+        , attributes:created::timestamptz as created
+        , updated::timestamptz as updated
     from source
 
 )
