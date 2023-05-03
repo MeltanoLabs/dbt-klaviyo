@@ -12,3 +12,4 @@ sources:
       - name: metrics
       - name: profiles
       - name: templates
+      - name: flows
