@@ -1,9 +1,3 @@
-{{
-    config(
-        enabled = target.type == 'snowflake'
-    )
-}}
-
 with source as (
 
     select * from {{ source('klaviyo', 'campaigns') }}
